@@ -177,6 +177,17 @@
 .pl-input-wrap.is-amount .pl-input { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
 .pl-input-wrap.is-amount .pl-affix { font-size: 22px; font-weight: 600; color: var(--pl-text); }
 .pl-input-wrap.is-select select { padding-right: 36px; cursor: pointer; }
+/* The open dropdown list is drawn by the OS from the select's own colours, so a
+   transparent select gives light text on a light list in dark mode. Paint both. */
+.pl-input-wrap.is-select select,
+.pl-input-wrap.is-select option {
+  background-color: var(--pl-surface);
+  color: var(--pl-text);
+}
+.pl-input-wrap.is-select option:disabled { color: var(--pl-muted); }
+.pl-input-wrap.is-select select:invalid,
+.pl-input-wrap.is-select select:has(option[value='']:checked) { color: var(--pl-muted); }
+.pl-input-wrap.is-select select option:not(:disabled) { color: var(--pl-text); }
 .pl-select-caret { position: absolute; right: 12px; width: 18px; height: 18px; pointer-events: none; color: var(--pl-muted); }
 
 .pl-chips { display: flex; flex-wrap: wrap; gap: 8px; }
