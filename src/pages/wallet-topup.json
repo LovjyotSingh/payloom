@@ -1,0 +1,66 @@
+{
+  "$schema": "../../payloom.schema.json",
+  "version": 1,
+  "id": "wallet-topup",
+  "title": "Add money to wallet",
+  "description": "Live computed text: the new balance updates as you type, and only the nodes that read 'amount' re-render.",
+  "theme": { "accent": "#0F766E", "radius": "round" },
+  "state": { "balance": 1240, "amount": 1000, "upi": "", "step": "add" },
+  "body": [
+    { "type": "Heading", "props": { "text": "Add money", "level": 1 } },
+    {
+      "type": "Card",
+      "when": "step == 'add'",
+      "props": { "title": "Wallet" },
+      "children": [
+        {
+          "type": "Stack",
+          "props": { "gap": "lg" },
+          "children": [
+            { "type": "Amount", "props": { "label": "Current balance", "value": "{{ balance }}", "size": "md" } },
+            {
+              "type": "AmountField",
+              "bind": "amount",
+              "props": { "label": "Amount to add", "presets": [500, 1000, 2000, 5000], "min": 100, "max": 100000 },
+              "rules": [
+                { "type": "required", "message": "Enter an amount" },
+                { "type": "min", "value": 100, "message": "The minimum top-up is ₹100" },
+                { "type": "max", "value": 100000, "message": "The maximum top-up is ₹1,00,000" }
+              ]
+            },
+            { "type": "Text", "props": { "text": "New balance after top-up: {{ balance + amount | inr }}", "tone": "muted" } },
+            { "type": "Alert", "when": "amount > 10000", "props": { "tone": "info", "text": "Top-ups over ₹10,000 need your UPI PIN twice." } },
+            {
+              "type": "TextField",
+              "bind": "upi",
+              "props": { "label": "Pay from UPI ID", "placeholder": "name@bank", "transform": "lower" },
+              "rules": [{ "type": "required", "message": "Enter your UPI ID" }, { "type": "upi" }]
+            },
+            { "type": "Alert", "when": "$form.status == 'error'", "props": { "tone": "danger", "text": "{{ $form.error }}" } },
+            {
+              "type": "Button",
+              "props": { "label": "Add {{ amount | inr }}", "fullWidth": true, "loadingLabel": "Adding money…" },
+              "action": {
+                "type": "submit",
+                "endpoint": "wallet/topup",
+                "payload": ["amount", "upi"],
+                "onSuccess": [
+                  { "type": "set", "path": "balance", "from": "balance + amount" },
+                  { "type": "set", "path": "step", "value": "done" }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Stack",
+      "when": "step == 'done'",
+      "children": [
+        { "type": "PaymentStatus", "props": { "status": "success", "title": "{{ amount | inr }} added", "text": "Your wallet balance is now {{ balance | inr }}.", "reference": "{{ $result.reference }}" } },
+        { "type": "Button", "props": { "label": "Add more", "variant": "secondary", "fullWidth": true }, "action": [{ "type": "set", "path": "step", "value": "add" }, { "type": "set", "path": "amount", "value": 500 }] }
+      ]
+    }
+  ]
+}

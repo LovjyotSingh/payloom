@@ -1,0 +1,174 @@
+{
+  "$schema": "../../payloom.schema.json",
+  "version": 1,
+  "id": "bill-pay",
+  "title": "Pay electricity bill",
+  "description": "A three-step flow from one config: fetch the bill from the provider, review it, then pay. The fetched bill is written into page state by the action's onSuccess.",
+  "theme": { "accent": "#C2410C", "radius": "soft" },
+  "state": {
+    "step": "fetch",
+    "board": "",
+    "consumer": "",
+    "mobile": "",
+    "bill": null,
+    "method": "upi",
+    "upi": ""
+  },
+  "body": [
+    { "type": "Heading", "props": { "text": "Electricity bill", "level": 1 } },
+    {
+      "type": "Steps",
+      "props": { "steps": ["Find bill", "Review", "Paid"], "current": "{{ step == 'fetch' ? 0 : step == 'review' ? 1 : 2 }}", "label": "Bill payment progress" }
+    },
+    {
+      "type": "Card",
+      "when": "step == 'fetch'",
+      "props": { "title": "Find your bill", "description": "Your consumer number is printed at the top of your bill." },
+      "children": [
+        {
+          "type": "Stack",
+          "children": [
+            {
+              "type": "SelectField",
+              "bind": "board",
+              "props": {
+                "label": "Electricity board",
+                "placeholder": "Choose your board",
+                "options": [
+                  { "value": "bses-rajdhani", "label": "BSES Rajdhani (Delhi)" },
+                  { "value": "bses-yamuna", "label": "BSES Yamuna (Delhi)" },
+                  { "value": "tata-ddl", "label": "Tata Power DDL (Delhi)" },
+                  { "value": "dhbvn", "label": "DHBVN (Haryana)" },
+                  { "value": "bescom", "label": "BESCOM (Karnataka)" }
+                ]
+              },
+              "rules": [{ "type": "required", "message": "Choose your electricity board" }]
+            },
+            {
+              "type": "TextField",
+              "bind": "consumer",
+              "props": { "label": "Consumer number", "hint": "9 to 12 digits. Try 000000000 to see 'bill not found'.", "inputMode": "numeric", "transform": "digits", "maxLength": 12 },
+              "rules": [
+                { "type": "required", "message": "Enter your consumer number" },
+                { "type": "pattern", "value": "\\d{9,12}", "message": "Consumer numbers are 9 to 12 digits" }
+              ]
+            },
+            {
+              "type": "TextField",
+              "bind": "mobile",
+              "props": { "label": "Mobile number", "hint": "We will text the receipt here.", "type": "tel", "prefix": "+91", "autoComplete": "tel-national", "transform": "digits", "maxLength": 10 },
+              "rules": [{ "type": "phone" }]
+            },
+            { "type": "ErrorSummary" },
+            { "type": "Alert", "when": "$form.status == 'error'", "props": { "tone": "danger", "text": "{{ $form.error }}" } },
+            {
+              "type": "Button",
+              "props": { "label": "Fetch bill", "loadingLabel": "Fetching your bill…", "fullWidth": true },
+              "action": {
+                "type": "submit",
+                "endpoint": "bill/fetch",
+                "payload": ["board", "consumer"],
+                "onSuccess": [
+                  { "type": "set", "path": "bill", "from": "$result" },
+                  { "type": "set", "path": "step", "value": "review" }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Stack",
+      "when": "step == 'review'",
+      "props": { "gap": "lg" },
+      "children": [
+        {
+          "type": "Card",
+          "props": { "title": "Bill for {{ bill.name }}" },
+          "children": [
+            {
+              "type": "Stack",
+              "children": [
+                { "type": "Amount", "props": { "label": "Amount due", "value": "{{ bill.amount }}", "size": "xl" } },
+                { "type": "Badge", "when": "bill.overdue", "props": { "text": "Overdue", "tone": "danger" } },
+                {
+                  "type": "KeyValue",
+                  "props": {
+                    "items": [
+                      { "label": "Consumer number", "value": "{{ consumer }}" },
+                      { "label": "Billing period", "value": "{{ bill.period }}" },
+                      { "label": "Units consumed", "value": "{{ bill.units | number }} kWh" },
+                      { "label": "Due date", "value": "{{ bill.due }}" }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Card",
+          "props": { "title": "Pay with" },
+          "children": [
+            {
+              "type": "Stack",
+              "children": [
+                {
+                  "type": "RadioCards",
+                  "bind": "method",
+                  "props": {
+                    "label": "Payment method",
+                    "columns": 2,
+                    "options": [
+                      { "value": "upi", "label": "UPI", "icon": "upi" },
+                      { "value": "wallet", "label": "Wallet balance", "description": "₹3,120 available", "icon": "wallet" }
+                    ]
+                  },
+                  "rules": [{ "type": "required" }]
+                },
+                {
+                  "type": "TextField",
+                  "when": "method == 'upi'",
+                  "bind": "upi",
+                  "props": { "label": "UPI ID", "placeholder": "name@bank", "transform": "lower" },
+                  "rules": [{ "type": "required", "message": "Enter your UPI ID" }, { "type": "upi" }]
+                }
+              ]
+            }
+          ]
+        },
+        { "type": "ErrorSummary" },
+        { "type": "Alert", "when": "$form.status == 'error'", "props": { "tone": "danger", "title": "Payment not completed", "text": "{{ $form.error }}" } },
+        {
+          "type": "Stack",
+          "props": { "direction": "row", "gap": "sm", "justify": "between", "wrap": true },
+          "children": [
+            { "type": "Button", "props": { "label": "Back", "variant": "ghost" }, "action": { "type": "set", "path": "step", "value": "fetch" } },
+            {
+              "type": "Button",
+              "props": { "label": "Pay {{ bill.amount | inr }}", "loadingLabel": "Paying…" },
+              "action": {
+                "type": "submit",
+                "endpoint": "payments/create",
+                "payload": ["board", "consumer", "method", "upi", "bill"],
+                "onSuccess": { "type": "set", "path": "step", "value": "done" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Stack",
+      "when": "step == 'done'",
+      "children": [
+        {
+          "type": "PaymentStatus",
+          "props": { "status": "success", "title": "{{ bill.amount | inr }} paid", "text": "Your {{ upper(board) }} bill is paid. It can take up to 2 working days to show on your account.", "reference": "{{ $result.reference }}" }
+        },
+        { "type": "Button", "props": { "label": "Pay another bill", "variant": "secondary", "fullWidth": true }, "action": { "type": "reset" } }
+      ]
+    }
+  ]
+}

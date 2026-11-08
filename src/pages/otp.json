@@ -1,0 +1,46 @@
+{
+  "$schema": "../../payloom.schema.json",
+  "version": 1,
+  "id": "otp",
+  "title": "Verify payment",
+  "description": "3-D Secure style verification: a 6-box OTP input, a resend countdown and a retryable error.",
+  "theme": { "radius": "sharp", "density": "compact" },
+  "state": { "otp": "", "step": "verify", "resent": false },
+  "body": [
+    {
+      "type": "Stack",
+      "when": "step == 'verify'",
+      "props": { "gap": "lg" },
+      "children": [
+        { "type": "Merchant", "props": { "name": "Metro Rail Smart Card", "subtitle": "Card recharge" } },
+        { "type": "Amount", "props": { "label": "Amount", "value": 750 } },
+        { "type": "Heading", "props": { "text": "Enter the code from your bank", "level": 1 } },
+        {
+          "type": "OtpField",
+          "bind": "otp",
+          "props": { "label": "One-time password", "hint": "Sent by SMS to +91 99•••••062. For this demo the code is 123456.", "length": 6 },
+          "rules": [{ "type": "required", "message": "Enter the 6-digit code" }, { "type": "otp", "value": 6 }]
+        },
+        { "type": "Alert", "when": "resent && $form.status != 'error'", "props": { "tone": "success", "text": "A new code has been sent." } },
+        { "type": "Alert", "when": "$form.status == 'error'", "props": { "tone": "danger", "text": "{{ $form.error }}" } },
+        {
+          "type": "Button",
+          "props": { "label": "Verify and pay", "loadingLabel": "Verifying…", "fullWidth": true },
+          "action": { "type": "submit", "endpoint": "otp/verify", "payload": ["otp"], "onSuccess": { "type": "set", "path": "step", "value": "done" } }
+        },
+        {
+          "type": "ResendTimer",
+          "props": { "seconds": 20 },
+          "action": { "type": "submit", "endpoint": "otp/resend", "payload": [], "validate": false, "onSuccess": [{ "type": "set", "path": "resent", "value": true }, { "type": "set", "path": "otp", "value": "" }] }
+        }
+      ]
+    },
+    {
+      "type": "Stack",
+      "when": "step == 'done'",
+      "children": [
+        { "type": "PaymentStatus", "props": { "status": "success", "title": "₹750 paid", "text": "Your smart card has been recharged.", "reference": "{{ $result.reference }}" } }
+      ]
+    }
+  ]
+}
