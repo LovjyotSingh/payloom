@@ -1,5 +1,4 @@
 {
-  "$schema": "../../payloom.schema.json",
   "version": 1,
   "id": "bill-pay",
   "title": "Pay electricity bill",

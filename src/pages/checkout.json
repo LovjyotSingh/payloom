@@ -1,5 +1,4 @@
 {
-  "$schema": "../../payloom.schema.json",
   "version": 1,
   "id": "checkout",
   "title": "Checkout",

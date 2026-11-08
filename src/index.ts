@@ -1,0 +1,11 @@
+/** Public API of the Payloom library (engine + default components). */
+export { PageRenderer, useRuntime, fieldId, type PageRendererProps } from './engine/Renderer'
+export { Registry, type ComponentDef, type RenderProps, type FieldApi, type PropSpec } from './engine/registry'
+export { PageRuntime, ApiError, type ApiAdapter, type ApiRequest, type EngineEvent } from './engine/runtime'
+export { validatePage, parseJson, type Issue, type ValidationResult } from './engine/validate'
+export { parse as parseExpression, run as evaluateExpression, ExprError } from './engine/expr'
+export { check as checkRules, type Rule, type RuleType } from './engine/rules'
+export { inr, groupIndian } from './engine/format'
+export type { PageSchema, UINode, ActionSpec, PageTheme } from './engine/schema'
+export { themeVars, resolvePalette, type Mode } from './tokens/tokens'
+export { createDefaultRegistry, defaultRegistry, ALL_COMPONENTS } from './components'
