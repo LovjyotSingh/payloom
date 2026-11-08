@@ -2,7 +2,7 @@
 
 **Schema-driven UI platform for payment pages.** Payment flows are written as JSON configs. A validator checks each config against a registry of accessible React components, and a small runtime handles state, validation, retries and idempotent submits. A new checkout needs a config, not a new codebase.
 
-**Live demo: https://payloom.vercel.app** · sample pages, a live config playground, and component docs generated from the registry.
+**Live demo: https://payloom-three.vercel.app** · sample pages, a live config playground, and component docs generated from the registry.
 
 ![React 19](https://img.shields.io/badge/React-19-000?logo=react) ![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-000?logo=typescript) ![tests](https://img.shields.io/badge/tests-120%20passing-000) ![axe](https://img.shields.io/badge/axe-0%20violations-000) ![size](https://img.shields.io/badge/engine%20%2B%2025%20components-25%20kB%20gzip-000)
 
@@ -85,7 +85,7 @@ Feedback: `Alert`, `ErrorSummary`, `Steps`
 Content: `Heading`, `Text`, `Badge`, `KeyValue`
 Layout: `Stack`, `Card`, `Divider`
 
-Full props for each are on the [docs page](https://payloom.vercel.app/#/components), generated from the registry.
+Full props for each are on the [docs page](https://payloom-three.vercel.app/#/components), generated from the registry.
 
 ## Sample pages
 
